@@ -1,5 +1,47 @@
 var fs = require("fs");
 var Handlebars = require("handlebars");
+var moment = require('moment');
+moment.locale('fr');
+
+function getFormattedDate(date, date_format) {
+    date_format = date_format || 'MMM YYYY';
+
+    return moment(date).format(date_format);
+}
+
+function humanizeDuration(duration) {
+   var days,
+       months = duration.months(),
+       years = duration.years(),
+       month_str = months > 1 ? 'mois' : 'mois',
+       year_str = years > 1 ? 'ans' : 'an';
+
+    if ( months && years ) {
+        return years + ' ' + year_str + ' ' + months + ' ' + month_str;
+    }
+
+    if ( months ) {
+        return months + ' ' + month_str;
+    }
+
+    if ( years ) {
+        return years + ' ' + year_str;
+    }
+
+    days = duration.days();
+
+    return ( days > 1 ? days + ' jours' : days + ' jour' );
+}
+
+function getDuration(start_date, end_date, humanize) {
+    var duration;
+
+    start_date = new Date(start_date);
+    end_date = new Date(end_date);
+    duration = moment.duration(end_date.getTime() - start_date.getTime());
+
+    return (humanize ? humanizeDuration(duration) : duration);
+}
 
 COURSES_COLUMNS = 3;
 
@@ -32,6 +74,74 @@ function render(resume) {
           }
         });
         block.courses = splitCourses;
+      }
+    });
+  }
+
+  if (validateArray(resume.work)) {
+    resume.work.forEach(function(block) {
+      var duration;
+      var start_date = block.startDate;
+      var end_date = block.endDate;
+
+      if (end_date) {
+        block.endDate = getFormattedDate(end_date);
+      }
+
+      if (start_date) {
+        end_date = end_date || new Date();
+        duration = getDuration(start_date, end_date);
+        block.startDate = getFormattedDate(start_date);
+
+        if (!duration.years() && !duration.months() && duration.days() > 1) {
+          block.duration = 'Arrivé recemment'; //'Recently joined';
+        } else {
+          block.duration = getDuration(start_date, end_date, true);
+        }
+      }
+    });
+  }
+
+  if (validateArray(resume.education)) {
+    resume.education.forEach(function(block) {
+      ['startDate', 'endDate'].forEach(function(type) {
+        var date = block[type];
+
+        if (date) {
+          block[type] = getFormattedDate(date);
+        }
+      });
+    });
+  }
+
+  if (validateArray(resume.awards)) {
+    resume.awards.forEach(function(block) {
+       var date = block.date;
+
+       if (date) {
+           block.date = getFormattedDate(date, 'DD MMM YYYY');
+       }
+    });
+  }
+
+  if (validateArray(resume.volunteer)) {
+    resume.volunteer.forEach(function(block) {
+      ['startDate', 'endDate'].forEach(function(type) {
+        var date = block[type];
+
+        if (date) {
+          block[type] = getFormattedDate(date);
+        }
+      });
+    });
+  }
+
+  if (validateArray(resume.publications)) {
+    resume.publications.forEach(function(block) {
+      var date = block.releaseDate;
+
+      if (date) {
+        block.releaseDate = getFormattedDate(date, 'DD MMM YYYY');
       }
     });
   }
