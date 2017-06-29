@@ -1,6 +1,8 @@
 var fs = require("fs");
 var Handlebars = require("handlebars");
 var moment = require('moment');
+
+require('./moment-precise-range.js');
 moment.locale('fr');
 
 function getFormattedDate(date, date_format) {
@@ -38,7 +40,12 @@ function getDuration(start_date, end_date, humanize) {
 
     start_date = new Date(start_date);
     end_date = new Date(end_date);
-    duration = moment.duration(end_date.getTime() - start_date.getTime());
+    var can_calculate_period = start_date.isValid() && end_date.isValid();
+
+    if (!can_calculate_period) {
+        return '';
+    }
+    duration = moment.preciseDiff(start_date, end_date);
 
     return (humanize ? humanizeDuration(duration) : duration);
 }
@@ -81,23 +88,18 @@ function render(resume) {
   if (validateArray(resume.work)) {
     resume.work.forEach(function(block) {
       var duration;
-      var start_date = block.startDate;
-      var end_date = block.endDate;
+      var start_date = moment(block.startDate, "YYYY-MM-DD");
+      var end_date = block.endDate ? moment(block.endDate, "YYYY-MM-DD") : null;
 
       if (end_date) {
         block.endDate = getFormattedDate(end_date);
       }
 
       if (start_date) {
-        end_date = end_date || new Date();
-        duration = getDuration(start_date, end_date);
-        block.startDate = getFormattedDate(start_date);
+        end_date = end_date || moment();
 
-        if (!duration.years() && !duration.months() && duration.days() > 1) {
-          block.duration = 'Arrivé recemment'; //'Recently joined';
-        } else {
-          block.duration = getDuration(start_date, end_date, true);
-        }
+        block.duration = moment.preciseDiff(start_date, end_date);
+        block.startDate = getFormattedDate(start_date);
       }
     });
   }
