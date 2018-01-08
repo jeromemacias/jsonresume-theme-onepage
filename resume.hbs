@@ -78,7 +78,7 @@
 			<div class="jobBlock">
 	      <div class='blockHeader'>
 	        <span class='title'>
-	          {{#if company}}{{company}}{{/if}}{{#if position}}, {{position}}{{/if}}
+	          {{#if position}}{{position}}{{/if}}{{#if company}}, {{company}}{{/if}}
 	        </span>
 	        {{#if startDate}}
 	        <span class='date'>
@@ -86,7 +86,6 @@
 	        </span>
 	        {{/if}}
 	      </div>
-	      <div><a href='{{website}}'>{{website}}</a></div>
 	      {{#if highlights.length}}
 	      <ul class='highlights'>
 	        {{#each highlights}}
