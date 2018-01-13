@@ -82,7 +82,7 @@
 	        </span>
 	        {{#if startDate}}
 	        <span class='date'>
-	          {{#if startDate}}{{startDate}}{{/if}}{{#if endDate}} &mdash; {{endDate}}{{/if}}{{#if duration}} ({{duration}}){{/if}}
+	          {{#if startDate}}{{startDate}}{{/if}} &mdash; {{#if endDate}}{{endDate}}{{#if duration }} ({{duration}}){{/if}}{{else}}Aujourd'hui{{/if}}
 	        </span>
 	        {{/if}}
 	      </div>
